@@ -1,5 +1,6 @@
 import os
 import uuid
+import csv
 from flask import Flask, request, send_from_directory, jsonify
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -11,6 +12,7 @@ BASE_URL = os.getenv("BASE_URL", "https://web-production-9fe3c.up.railway.app")
 GENERATED_DIR = "generated"
 IMAGES_DIR = "images"
 BACKGROUND_PATH = "poster_background.png"
+CSV_PATH = "responses.csv"
 
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
@@ -93,6 +95,7 @@ def list_posters():
     <html>
     <head>
         <title>Posters generados</title>
+        <meta http-equiv="refresh" content="10">
         <style>
             body { font-family: Arial, sans-serif; padding: 30px; }
             h1 { margin-bottom: 20px; }
@@ -111,6 +114,100 @@ def list_posters():
 
     html += """
         </ul>
+    </body>
+    </html>
+    """
+
+    return html
+
+
+@app.route("/generar-pendientes")
+def generar_pendientes():
+    if not os.path.exists(CSV_PATH):
+        return "No existe responses.csv en la raíz del proyecto", 404
+
+    generados = []
+    omitidos = []
+
+    with open(CSV_PATH, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+
+        for idx, row in enumerate(reader, start=1):
+            token = (
+                row.get("#", "").strip()
+                or row.get("Response ID", "").strip()
+                or row.get("Token", "").strip()
+                or uuid.uuid4().hex
+            )
+
+            nombre = (
+                row.get("Nombres y apellidos del Doctor", "").strip()
+                or row.get("Nombre", "").strip()
+                or row.get("Name", "").strip()
+            )
+
+            incluir_nombre = row.get(
+                "¿Desea incluir su nombre en el pie del póster?",
+                "1"
+            ).strip()
+
+            if incluir_nombre.lower() in ["0", "false", "no", "n"]:
+                nombre = ""
+
+            imagenes = []
+
+            for i in range(1, 23):
+                col = f"{i:02d}"
+                valor = row.get(col, "").strip()
+
+                if valor:
+                    imagenes.append(f"image_{col}.png")
+
+            if len(imagenes) < 4:
+                omitidos.append(f"Fila {idx}: menos de 4 imágenes")
+                continue
+
+            filename = f"poster_pendiente_{token}.pdf"
+            filename = filename.replace("/", "_").replace(" ", "_")
+            path = os.path.join(GENERATED_DIR, filename)
+
+            make_poster(nombre, imagenes[:4], path)
+
+            generados.append(filename)
+
+    html = """
+    <html>
+    <head>
+        <title>Posters pendientes generados</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 30px; }
+            h1 { margin-bottom: 20px; }
+            h2 { margin-top: 30px; }
+            li { margin: 10px 0; font-size: 17px; }
+            a { color: #0057b8; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            .ok { color: green; }
+            .bad { color: #b00020; }
+        </style>
+    </head>
+    <body>
+    """
+
+    html += f'<h1 class="ok">Posters generados: {len(generados)}</h1>'
+    html += "<ul>"
+
+    for f in generados:
+        html += f'<li><a href="/generated/{f}" target="_blank">{f}</a></li>'
+
+    html += "</ul>"
+
+    if omitidos:
+        html += f'<h2 class="bad">Omitidos: {len(omitidos)}</h2><ul>'
+        for o in omitidos:
+            html += f"<li>{o}</li>"
+        html += "</ul>"
+
+    html += """
     </body>
     </html>
     """
@@ -137,15 +234,14 @@ def make_poster(nombre, imagenes, output_path):
         c.setFillColorRGB(0.3, 0.3, 0.3)
         c.drawRightString(page_w - 50, 60, nombre)
 
-    # Imágenes un poco más bajas
     box_w = 245
     box_h = 300
 
     positions = [
         (45, 400),    # arriba izquierda
         (322, 400),   # arriba derecha
-        (45, 70),    # abajo izquierda
-        (322, 70),   # abajo derecha
+        (45, 70),     # abajo izquierda
+        (322, 70),    # abajo derecha
     ]
 
     for img_name, (x, y) in zip(imagenes, positions):
