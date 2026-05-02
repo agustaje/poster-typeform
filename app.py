@@ -17,7 +17,7 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 
 @app.route("/")
 def home():
-    return "OK mmm"
+    return "OK"
 
 
 @app.route("/typeform-webhook", methods=["POST"])
@@ -55,7 +55,7 @@ def webhook():
         nombre = ""
 
     if not imagenes:
-        imagenes = ["imagen_01.png", "imagen_02.png", "imagen_03.png", "imagen_04.png"]
+        imagenes = ["image_01.png", "image_02.png", "image_03.png", "image_04.png"]
 
     filename = f"poster_{uuid.uuid4().hex}.pdf"
     path = os.path.join(GENERATED_DIR, filename)
@@ -74,6 +74,11 @@ def webhook():
 @app.route("/generated/<filename>")
 def generated(filename):
     return send_from_directory(GENERATED_DIR, filename)
+
+
+@app.route("/images/<filename>")
+def images(filename):
+    return send_from_directory(IMAGES_DIR, filename)
 
 
 @app.route("/posters")
@@ -126,22 +131,20 @@ def make_poster(nombre, imagenes, output_path):
             height=page_h
         )
 
+    # Nombre del doctor en el pie, arriba de los logos
     if nombre:
-        c.setFont("Helvetica-Bold", 22)
-        c.drawCentredString(page_w / 2, page_h - 55, nombre)
+        c.setFont("Helvetica-Bold", 13)
+        c.drawCentredString(page_w / 2, 58, nombre)
 
-    margin_x = 40
-    margin_y = 40
-    gap = 10
-
-    box_w = (page_w - margin_x * 2 - gap) / 2
-    box_h = (page_h - margin_y * 2 - 120 - gap) / 2
+    # Posiciones ajustadas al fondo
+    box_w = 245
+    box_h = 300
 
     positions = [
-        (margin_x, page_h / 2 + 20),
-        (margin_x + box_w + gap, page_h / 2 + 20),
-        (margin_x, margin_y),
-        (margin_x + box_w + gap, margin_y),
+        (45, 430),    # arriba izquierda
+        (322, 430),   # arriba derecha
+        (45, 130),    # abajo izquierda
+        (322, 130),   # abajo derecha
     ]
 
     for img_name, (x, y) in zip(imagenes, positions):
