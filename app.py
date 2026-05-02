@@ -131,20 +131,21 @@ def make_poster(nombre, imagenes, output_path):
             height=page_h
         )
 
-    # Nombre del doctor en el pie, arriba de los logos
+    # Nombre del doctor: gris oscuro, alineado a la derecha
     if nombre:
         c.setFont("Helvetica-Bold", 13)
-        c.drawCentredString(page_w / 2, 58, nombre)
+        c.setFillColorRGB(0.3, 0.3, 0.3)
+        c.drawRightString(page_w - 50, 60, nombre)
 
-    # Posiciones ajustadas al fondo
+    # Imágenes un poco más bajas
     box_w = 245
     box_h = 300
 
     positions = [
-        (45, 430),    # arriba izquierda
-        (322, 430),   # arriba derecha
-        (45, 130),    # abajo izquierda
-        (322, 130),   # abajo derecha
+        (45, 400),    # arriba izquierda
+        (322, 400),   # arriba derecha
+        (45, 100),    # abajo izquierda
+        (322, 100),   # abajo derecha
     ]
 
     for img_name, (x, y) in zip(imagenes, positions):
