@@ -144,8 +144,8 @@ def make_poster(nombre, imagenes, output_path):
     positions = [
         (45, 400),    # arriba izquierda
         (322, 400),   # arriba derecha
-        (45, 100),    # abajo izquierda
-        (322, 100),   # abajo derecha
+        (45, 70),    # abajo izquierda
+        (322, 70),   # abajo derecha
     ]
 
     for img_name, (x, y) in zip(imagenes, positions):
