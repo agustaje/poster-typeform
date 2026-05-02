@@ -10,7 +10,7 @@ app = Flask(__name__)
 BASE_URL = os.getenv("BASE_URL", "https://web-production-9fe3c.up.railway.app")
 GENERATED_DIR = "generated"
 IMAGES_DIR = "images"
-BACKGROUND_PATH = "background.png"
+BACKGROUND_PATH = "poster_background.png"
 
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
