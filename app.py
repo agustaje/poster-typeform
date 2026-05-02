@@ -17,7 +17,7 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 
 @app.route("/")
 def home():
-    return "OK"
+    return "OK mmm"
 
 
 @app.route("/typeform-webhook", methods=["POST"])
