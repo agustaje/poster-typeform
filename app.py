@@ -40,7 +40,7 @@ def webhook():
 
         if field_ref == REF_IMAGENES:
             labels = a.get("choices", {}).get("labels", [])
-            imagenes = [f"imagen_{label}.png" for label in labels]
+            imagenes = [f"image_{label}.png" for label in labels]
 
         elif field_ref == REF_NOMBRE:
             nombre = a.get("text", "Sin nombre")
